@@ -1,4 +1,12 @@
 package storage;
 
-public class DataStorage {
+import model.ApiRecord;
+
+import java.nio.file.Path;
+import java.util.List;
+
+public interface DataStorage {
+    void save(List<ApiRecord> records, Path path);
+    List<ApiRecord> load(Path path);
+
 }
