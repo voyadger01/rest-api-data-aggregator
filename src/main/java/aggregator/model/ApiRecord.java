@@ -1,4 +1,4 @@
-package model;
+package aggregator.model;
 
 import java.time.Instant;
 import java.util.Map;

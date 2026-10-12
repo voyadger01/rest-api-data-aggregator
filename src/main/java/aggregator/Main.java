@@ -1,3 +1,5 @@
+package aggregator;
+
 import cli.CLIParser;
 
 public class Main {

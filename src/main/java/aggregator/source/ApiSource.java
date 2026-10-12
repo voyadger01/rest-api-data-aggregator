@@ -1,4 +1,4 @@
-package source;
+package aggregator.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

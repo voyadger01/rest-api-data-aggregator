@@ -1,4 +1,4 @@
-package http;
+package aggregator.http;
 
 import java.io.IOException;
 import java.net.http.HttpClient;

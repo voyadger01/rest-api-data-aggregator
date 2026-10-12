@@ -1,6 +1,6 @@
-package storage;
+package aggregator.storage;
 
-import model.ApiRecord;
+import aggregator.model.ApiRecord;
 
 import java.nio.file.Path;
 import java.util.List;
