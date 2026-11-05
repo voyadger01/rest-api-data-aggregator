@@ -99,7 +99,7 @@ public class CsvStorage implements DataStorage {
                     value.append(current);
                 }
             } else if (current == '"') {
-                if (value.length() != 0) {
+                if (!value.isEmpty()) {
                     throw new IOException("Некорректное экранирование CSV");
                 }
                 quoted = true;
