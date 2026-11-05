@@ -1,6 +1,7 @@
 package aggregator.http;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -12,10 +13,22 @@ public class HttpClientService {
     public HttpClientService(HttpClient client) {
         this.client = client;
     }
+
     public HttpClientService() {
-        this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
+        this(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build());
     }
-    public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> handler) throws IOException, InterruptedException {
-        return client.send(request, handler);
+
+    public String get(URI uri) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(20))
+                .header("Accept", "application/json")
+                .header("User-Agent", "RestApiDataAggregator/1.0")
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException("HTTP " + response.statusCode() + " при запросе " + uri + ": " + response.body());
+        }
+        return response.body();
     }
 }
