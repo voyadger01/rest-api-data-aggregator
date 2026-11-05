@@ -40,11 +40,11 @@ public class CLIController {
     private void collect(CLIParser.Options options, DataStorage storage) throws IOException, InterruptedException {
         List<ApiRecord> records = aggregator.collect(options.apis(), options.parameters());
         storage.save(records, options.file(), options.append());
-        System.out.println("Получено и сохранено записей: " + records.size());
-        System.out.println("Файл: " + options.file().toAbsolutePath());
-        System.out.println("Источники: " + String.join(", ", options.apis()));
-        System.out.println("Формат: " + options.format());
-        System.out.println("Режим: " + (options.append() ? "append" : "create"));
+        IO.println("Получено и сохранено записей: " + records.size());
+        IO.println("Файл: " + options.file().toAbsolutePath());
+        IO.println("Источники: " + String.join(", ", options.apis()));
+        IO.println("Формат: " + options.format());
+        IO.println("Режим: " + (options.append() ? "append" : "create"));
     }
 
     private void read(CLIParser.Options options, DataStorage storage) throws IOException {
@@ -54,20 +54,20 @@ public class CLIController {
                     .filter(record -> record.source().equalsIgnoreCase(options.source()))
                     .toList();
         }
-        System.out.println(mapper.writer(SerializationFeature.INDENT_OUTPUT).writeValueAsString(records));
+        IO.println(mapper.writer(SerializationFeature.INDENT_OUTPUT).writeValueAsString(records));
     }
 
     private void printHelp() {
-        System.out.println("REST API Data Aggregator");
-        System.out.println();
-        System.out.println("Сбор данных:");
-        System.out.println("  collect --apis weather,food,github --format json|csv --mode create|append --file data/results.json");
-        System.out.println("  collect --apis weather --format json --file data/weather.json --param weather.latitude=48.8566 --param weather.longitude=2.3522");
-        System.out.println();
-        System.out.println("Чтение файла:");
-        System.out.println("  read --file data/results.json [--format json|csv] [--source weather]");
-        System.out.println();
-        System.out.println("Доступные API: " + String.join(", ", aggregator.sourceNames()));
-        System.out.println("Параметр API задаётся в формате --param api.key=value и может повторяться.");
+        IO.println("REST API Data Aggregator");
+        IO.println();
+        IO.println("Сбор данных:");
+        IO.println("  collect --apis weather,food,github --format json|csv --mode create|append --file data/results.json");
+        IO.println("  collect --apis weather --format json --file data/weather.json --param weather.latitude=48.8566 --param weather.longitude=2.3522");
+        IO.println();
+        IO.println("Чтение файла:");
+        IO.println("  read --file data/results.json [--format json|csv] [--source weather]");
+        IO.println();
+        IO.println("Доступные API: " + String.join(", ", aggregator.sourceNames()));
+        IO.println("Параметр API задаётся в формате --param api.key=value и может повторяться.");
     }
 }
