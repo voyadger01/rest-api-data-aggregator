@@ -74,7 +74,6 @@ public class CLIController {
 
     private void printHelp() {
         IO.println("REST API Data Aggregator");
-        IO.println("Консольное приложение для сбора данных из трёх открытых REST API и сохранения в JSON или CSV.");
         IO.println();
         IO.println("КОМАНДЫ");
         IO.println("  collect   Запрашивает данные из выбранных API и сохраняет их в файл.");
@@ -98,19 +97,6 @@ public class CLIController {
         IO.println("  weather   Open-Meteo: latitude, longitude — координаты; current — текущие показатели; timezone — часовой пояс.");
         IO.println("  users     JSONPlaceholder: username — фильтр по имени пользователя. Ответ содержит профиль, адрес и компанию.");
         IO.println("  comments  DummyJSON: sortBy — поле сортировки; order — asc или desc. Ответ содержит комментарии и вложенные данные автора.");
-        IO.println();
-        IO.println("ПРИМЕРЫ");
-        IO.println("  collect --apis weather,users,comments --format json --file src/main/resources/results.json");
-        IO.println("  collect --apis weather --format csv --file src/main/resources/weather.csv --param weather.latitude=48.8566 --param weather.longitude=2.3522");
-        IO.println("  collect --apis users --format json --file src/main/resources/users.json --param users.username=Antonette");
-        IO.println("  collect --apis comments --format json --file src/main/resources/comments.json --param comments.sortBy=likes --param comments.order=asc");
-        IO.println("  collect --apis comments --format csv --mode append --file src/main/resources/results.csv");
-        IO.println("  read --file src/main/resources/results.json");
-        IO.println("  read --file src/main/resources/results.csv --source comments");
-        IO.println();
-        IO.println("ФОРМАТ CSV");
-        IO.println("  Поля JSON записываются в отдельные столбцы. Вложенные поля обозначаются точками, например data.address.geo.lat или data.comments.0.user.username.");
-        IO.println("  Элементы массивов обозначаются индексами. Для каждого ответа API создаётся отдельная строка.");
         IO.println();
         IO.println("Параметры по умолчанию используются, если соответствующее значение не передано через --param.");
     }
