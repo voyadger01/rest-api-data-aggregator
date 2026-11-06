@@ -5,12 +5,15 @@ import aggregator.model.ApiRecord;
 import aggregator.storage.DataStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 public class CLIController {
+    private static final Logger logger = LoggerFactory.getLogger(CLIController.class);
     private final DataAggregator aggregator;
     private final Map<String, DataStorage> storages;
     private final ObjectMapper mapper;
@@ -26,10 +29,12 @@ public class CLIController {
             printHelp();
             return;
         }
+
         DataStorage storage = storages.get(options.format());
         if (storage == null) {
             throw new IllegalArgumentException("Неподдерживаемый формат: " + options.format());
         }
+
         if (options.command().equals("collect")) {
             collect(options, storage);
         } else {
@@ -40,6 +45,14 @@ public class CLIController {
     private void collect(CLIParser.Options options, DataStorage storage) throws IOException, InterruptedException {
         List<ApiRecord> records = aggregator.collect(options.apis(), options.parameters());
         storage.save(records, options.file(), options.append());
+
+        logger.info(
+                "Saved {} records to {} using {} format",
+                records.size(),
+                options.file().toAbsolutePath(),
+                options.format()
+        );
+
         IO.println("Получено и сохранено записей: " + records.size());
         IO.println("Файл: " + options.file().toAbsolutePath());
         IO.println("Источники: " + String.join(", ", options.apis()));
@@ -54,6 +67,8 @@ public class CLIController {
                     .filter(record -> record.source().equalsIgnoreCase(options.source()))
                     .toList();
         }
+
+        logger.info("Read {} records from {}", records.size(), options.file().toAbsolutePath());
         IO.println(mapper.writer(SerializationFeature.INDENT_OUTPUT).writeValueAsString(records));
     }
 

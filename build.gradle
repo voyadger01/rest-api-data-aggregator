@@ -10,12 +10,28 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    mockitoAgent
+}
+
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.1'
+    implementation 'ch.qos.logback:logback-classic:1.6.6'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.mockito:mockito-core:5.24.0'
+    mockitoAgent('org.mockito:mockito-core:5.24.0') {
+        transitive = false
+    }
+
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
 }
 
 application {
@@ -23,10 +39,7 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
-}
-
-test {
-    useJUnitPlatform()
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }

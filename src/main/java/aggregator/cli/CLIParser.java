@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class CLIParser {
@@ -19,7 +20,6 @@ public class CLIParser {
         }
 
         String command = parseCommand();
-
         Map<String, String> values = new LinkedHashMap<>();
         Map<String, Map<String, String>> parameters = new LinkedHashMap<>();
 
@@ -39,7 +39,7 @@ public class CLIParser {
     }
 
     private String parseCommand() {
-        String command = args[0].toLowerCase();
+        String command = args[0].toLowerCase(Locale.ROOT);
 
         if (!command.equals("collect") && !command.equals("read")) {
             throw new IllegalArgumentException("Неизвестная команда: " + args[0]);
@@ -109,7 +109,7 @@ public class CLIParser {
             throw new IllegalArgumentException("Формат --param: api.key=value");
         }
 
-        String api = value.substring(0, separator).toLowerCase();
+        String api = value.substring(0, separator).toLowerCase(Locale.ROOT);
         String key = value.substring(separator + 1, equals);
         String parameterValue = value.substring(equals + 1);
 
@@ -127,7 +127,7 @@ public class CLIParser {
                 : List.of();
 
         String format = values.get("--format");
-        String mode = values.getOrDefault("--mode", "create").toLowerCase();
+        String mode = values.getOrDefault("--mode", "create").toLowerCase(Locale.ROOT);
         String source = values.get("--source");
 
         validateMode(mode);
@@ -153,7 +153,7 @@ public class CLIParser {
         return new Options(
                 command,
                 apis,
-                format.toLowerCase(),
+                format.toLowerCase(Locale.ROOT),
                 mode.equals("append"),
                 file,
                 source,
@@ -162,12 +162,8 @@ public class CLIParser {
     }
 
     private void validateMode(String mode) {
-        if (!mode.equals("create")
-                && !mode.equals("overwrite")
-                && !mode.equals("append")) {
-            throw new IllegalArgumentException(
-                    "Режим должен быть create, overwrite или append"
-            );
+        if (!mode.equals("create") && !mode.equals("overwrite") && !mode.equals("append")) {
+            throw new IllegalArgumentException("Режим должен быть create, overwrite или append");
         }
     }
 
@@ -187,26 +183,23 @@ public class CLIParser {
 
         validateFormat(format);
 
-        String extension = file.getFileName().toString().toLowerCase();
+        String extension = file.getFileName() == null
+                ? ""
+                : file.getFileName().toString().toLowerCase(Locale.ROOT);
 
         if ((extension.endsWith(".json") && !format.equalsIgnoreCase("json"))
                 || (extension.endsWith(".csv") && !format.equalsIgnoreCase("csv"))) {
-            throw new IllegalArgumentException(
-                    "Формат файла не совпадает с параметром --format"
-            );
+            throw new IllegalArgumentException("Формат файла не совпадает с параметром --format");
         }
 
         if (values.containsKey("--source")) {
-            throw new IllegalArgumentException(
-                    "--source используется только с командой read"
-            );
+            throw new IllegalArgumentException("--source используется только с командой read");
         }
     }
 
     private void validateFormat(String format) {
         if (format == null
-                || (!format.equalsIgnoreCase("json")
-                && !format.equalsIgnoreCase("csv"))) {
+                || (!format.equalsIgnoreCase("json") && !format.equalsIgnoreCase("csv"))) {
             throw new IllegalArgumentException("Формат должен быть json или csv");
         }
     }
@@ -215,7 +208,7 @@ public class CLIParser {
         List<String> apis = new ArrayList<>();
 
         for (String api : value.split(",")) {
-            String name = api.trim().toLowerCase();
+            String name = api.trim().toLowerCase(Locale.ROOT);
 
             if (!name.isEmpty() && !apis.contains(name)) {
                 apis.add(name);
@@ -226,7 +219,9 @@ public class CLIParser {
     }
 
     private String inferFormat(Path file) {
-        String name = file.getFileName().toString().toLowerCase();
+        String name = file.getFileName() == null
+                ? ""
+                : file.getFileName().toString().toLowerCase(Locale.ROOT);
 
         if (name.endsWith(".json")) {
             return "json";

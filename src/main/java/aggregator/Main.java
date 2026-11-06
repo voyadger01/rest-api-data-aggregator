@@ -4,8 +4,8 @@ import aggregator.cli.CLIController;
 import aggregator.cli.CLIParser;
 import aggregator.http.HttpClientService;
 import aggregator.source.ApiSource;
-import aggregator.source.OpenFoodFactsSource;
 import aggregator.source.GitHubCommitsSource;
+import aggregator.source.OpenFoodFactsSource;
 import aggregator.source.OpenMeteoSource;
 import aggregator.storage.CsvStorage;
 import aggregator.storage.DataStorage;
@@ -13,10 +13,14 @@ import aggregator.storage.JsonStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class Main {
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
         ObjectMapper mapper = new ObjectMapper()
                 .registerModule(new JavaTimeModule())
@@ -40,11 +44,11 @@ public class Main {
             controller.execute(new CLIParser(args).parse());
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            System.err.println("Опрос был прерван.");
+            logger.error("API polling was interrupted", exception);
             System.exit(1);
         } catch (Exception exception) {
-            System.err.println("Ошибка: " + exception.getMessage());
-            System.err.println("Запустите программу с параметром --help для просмотра команд.");
+            logger.error("Application failed: {}", exception.getMessage(), exception);
+            logger.info("Run the application with --help to see available commands");
             System.exit(1);
         }
     }
