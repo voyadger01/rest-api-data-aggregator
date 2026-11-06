@@ -30,8 +30,9 @@ public class CLIParser {
 
     private boolean isHelpRequested() {
         return args.length == 0
-                || "--help".equals(args[0])
-                || "help".equals(args[0]);
+                || "help".equals(args[0])
+                || List.of(args).contains("--help")
+                || List.of(args).contains("-h");
     }
 
     private Options createHelpOptions() {

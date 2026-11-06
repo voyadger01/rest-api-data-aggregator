@@ -4,8 +4,8 @@ import aggregator.cli.CLIController;
 import aggregator.cli.CLIParser;
 import aggregator.http.HttpClientService;
 import aggregator.source.ApiSource;
-import aggregator.source.GitHubCommitsSource;
-import aggregator.source.OpenFoodFactsSource;
+import aggregator.source.DummyJsonCommentsSource;
+import aggregator.source.JsonPlaceholderUsersSource;
 import aggregator.source.OpenMeteoSource;
 import aggregator.storage.CsvStorage;
 import aggregator.storage.DataStorage;
@@ -28,8 +28,8 @@ public class Main {
 
         Map<String, ApiSource> sources = Map.of(
                 "weather", new OpenMeteoSource(),
-                "food", new OpenFoodFactsSource(),
-                "github", new GitHubCommitsSource()
+                "users", new JsonPlaceholderUsersSource(),
+                "comments", new DummyJsonCommentsSource()
         );
 
         HttpClientService httpClient = new HttpClientService();

@@ -2,26 +2,25 @@ package aggregator.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class GitHubCommitsSource implements ApiSource {
+public class DummyJsonCommentsSource implements ApiSource {
     @Override
     public String name() {
-        return "github";
+        return "comments";
     }
 
     @Override
     public String baseUrl() {
-        return "https://api.github.com/repos/torvalds/linux/commits";
+        return "https://dummyjson.com/comments";
     }
 
     @Override
     public Map<String, String> defaultParameters() {
-        Map<String, String> parameters = new LinkedHashMap<>();
-        parameters.put("per_page", "5");
-        parameters.put("page", "1");
-        return parameters;
+        return Map.of(
+                "sortBy", "likes",
+                "order", "desc"
+        );
     }
 
     @Override

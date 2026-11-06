@@ -26,7 +26,19 @@ class JsonStorageTest {
         JsonStorage storage = new JsonStorage(mapper);
         Path file = tempDir.resolve("records.json");
         ApiRecord first = new ApiRecord("weather", Instant.parse("2026-01-01T10:00:00Z"), Map.of("city", "Tirana"), mapper.readTree("{\"current\":{\"temperature\":20}}"));
-        ApiRecord second = new ApiRecord("github", Instant.parse("2026-01-01T10:01:00Z"), Map.of("page", "2"), mapper.readTree("{\"commits\":[{\"message\":\"Commit\"}]}"));
+        ApiRecord second = new ApiRecord(
+                "comments",
+                Instant.parse("2026-01-01T10:01:00Z"),
+                Map.of("sortBy", "likes"),
+                mapper.readTree("""
+                        {
+                          "comments": [{"id": 1, "body": "Text", "postId": 1, "likes": 3,
+                            "user": {"id": 2, "username": "user", "fullName": "Test User"}}],
+                          "total": 1,
+                          "skip": 0,
+                          "limit": 1
+                        }
+                        """));
 
         storage.save(List.of(first), file, false);
         storage.save(List.of(second), file, true);
@@ -34,7 +46,7 @@ class JsonStorageTest {
         List<ApiRecord> loaded = storage.load(file);
         assertEquals(2, loaded.size());
         assertEquals("weather", loaded.get(0).source());
-        assertEquals("github", loaded.get(1).source());
-        assertEquals("Commit", loaded.get(1).node().path("commits").get(0).path("message").asText());
+        assertEquals("comments", loaded.get(1).source());
+        assertEquals("user", loaded.get(1).node().path("comments").get(0).path("user").path("username").asText());
     }
 }

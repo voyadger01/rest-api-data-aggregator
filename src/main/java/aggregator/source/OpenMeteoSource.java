@@ -21,9 +21,7 @@ public class OpenMeteoSource implements ApiSource {
         Map<String, String> parameters = new LinkedHashMap<>();
         parameters.put("latitude", "41.3275");
         parameters.put("longitude", "19.8187");
-        parameters.put("current", "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,wind_speed_10m");
-        parameters.put("hourly", "temperature_2m,precipitation_probability");
-        parameters.put("forecast_days", "1");
+        parameters.put("current", "temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m");
         parameters.put("timezone", "auto");
         return parameters;
     }

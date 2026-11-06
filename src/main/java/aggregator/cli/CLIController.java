@@ -74,15 +74,44 @@ public class CLIController {
 
     private void printHelp() {
         IO.println("REST API Data Aggregator");
+        IO.println("Консольное приложение для сбора данных из трёх открытых REST API и сохранения в JSON или CSV.");
         IO.println();
-        IO.println("Сбор данных:");
-        IO.println("  collect --apis weather,food,github --format json|csv --mode create|append --file data/results.json");
-        IO.println("  collect --apis weather --format json --file data/weather.json --param weather.latitude=48.8566 --param weather.longitude=2.3522");
+        IO.println("КОМАНДЫ");
+        IO.println("  collect   Запрашивает данные из выбранных API и сохраняет их в файл.");
+        IO.println("  read      Читает ранее сохранённый JSON/CSV-файл и выводит записи в консоль.");
+        IO.println("  help      Показывает справку.");
+        IO.println("  --help, -h Также показывают справку.");
         IO.println();
-        IO.println("Чтение файла:");
-        IO.println("  read --file data/results.json [--format json|csv] [--source weather]");
+        IO.println("ПАРАМЕТРЫ collect");
+        IO.println("  --apis <список>          Обязательный список источников через запятую: weather,users,comments.");
+        IO.println("  --format <json|csv>      Обязательный формат выходного файла.");
+        IO.println("  --file <путь>            Обязательный путь к файлу, например src/main/resources/results.json.");
+        IO.println("  --mode <режим>           Режим записи: create/overwrite — создать или перезаписать файл; append — добавить записи. По умолчанию create.");
+        IO.println("  --param <api.key=value>  Переопределяет query-параметр источника. Можно указывать несколько раз.");
         IO.println();
-        IO.println("Доступные API: " + String.join(", ", aggregator.sourceNames()));
-        IO.println("Параметр API задаётся в формате --param api.key=value и может повторяться.");
+        IO.println("ПАРАМЕТРЫ read");
+        IO.println("  --file <путь>            Обязательный путь к сохранённому файлу.");
+        IO.println("  --format <json|csv>      Формат файла. Необязателен: определяется по расширению .json или .csv.");
+        IO.println("  --source <имя_api>       Необязательный фильтр записей: weather, users или comments.");
+        IO.println();
+        IO.println("ИСТОЧНИКИ И ИХ QUERY-ПАРАМЕТРЫ");
+        IO.println("  weather   Open-Meteo: latitude, longitude — координаты; current — текущие показатели; timezone — часовой пояс.");
+        IO.println("  users     JSONPlaceholder: username — фильтр по имени пользователя. Ответ содержит профиль, адрес и компанию.");
+        IO.println("  comments  DummyJSON: sortBy — поле сортировки; order — asc или desc. Ответ содержит комментарии и вложенные данные автора.");
+        IO.println();
+        IO.println("ПРИМЕРЫ");
+        IO.println("  collect --apis weather,users,comments --format json --file src/main/resources/results.json");
+        IO.println("  collect --apis weather --format csv --file src/main/resources/weather.csv --param weather.latitude=48.8566 --param weather.longitude=2.3522");
+        IO.println("  collect --apis users --format json --file src/main/resources/users.json --param users.username=Antonette");
+        IO.println("  collect --apis comments --format json --file src/main/resources/comments.json --param comments.sortBy=likes --param comments.order=asc");
+        IO.println("  collect --apis comments --format csv --mode append --file src/main/resources/results.csv");
+        IO.println("  read --file src/main/resources/results.json");
+        IO.println("  read --file src/main/resources/results.csv --source comments");
+        IO.println();
+        IO.println("ФОРМАТ CSV");
+        IO.println("  Поля JSON записываются в отдельные столбцы. Вложенные поля обозначаются точками, например data.address.geo.lat или data.comments.0.user.username.");
+        IO.println("  Элементы массивов обозначаются индексами. Для каждого ответа API создаётся отдельная строка.");
+        IO.println();
+        IO.println("Параметры по умолчанию используются, если соответствующее значение не передано через --param.");
     }
 }
