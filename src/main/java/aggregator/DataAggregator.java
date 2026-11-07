@@ -5,8 +5,6 @@ import aggregator.model.ApiRecord;
 import aggregator.source.ApiSource;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,7 +16,6 @@ import java.util.Locale;
 import java.util.Map;
 
 public class DataAggregator {
-    private static final Logger logger = LoggerFactory.getLogger(DataAggregator.class);
     private final Map<String, ApiSource> sources;
     private final HttpClientService httpClient;
     private final ObjectMapper mapper;
@@ -41,18 +38,10 @@ public class DataAggregator {
             Map<String, String> parameters = new LinkedHashMap<>(source.defaultParameters());
             parameters.putAll(overrides.getOrDefault(source.name(), Map.of()));
             URI uri = URI.create(source.buildUrl(parameters));
-            logger.info("[START] API {} parameters={}", source.name(), parameters);
-
-            try {
-                String responseBody = httpClient.get(uri);
-                JsonNode response = mapper.readTree(responseBody);
-                JsonNode data = source.extractData(response);
-                records.add(new ApiRecord(source.name(), Instant.now(), Map.copyOf(parameters), data));
-                logger.info("[END] API {} result=OK", source.name());
-            } catch (IOException | InterruptedException | RuntimeException exception) {
-                logger.error("[END] API {} result=ERROR message={}", source.name(), exception.getMessage());
-                throw exception;
-            }
+            String responseBody = httpClient.get(uri);
+            JsonNode response = mapper.readTree(responseBody);
+            JsonNode data = source.extractData(response);
+            records.add(new ApiRecord(source.name(), Instant.now(), Map.copyOf(parameters), data));
         }
         return records;
     }

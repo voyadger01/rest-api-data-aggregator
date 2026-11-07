@@ -18,7 +18,7 @@ public class JsonStorage implements DataStorage {
     }
 
     @Override
-    public void save(List<ApiRecord> records, Path path, boolean append) throws IOException {
+    public synchronized void save(List<ApiRecord> records, Path path, boolean append) throws IOException {
         List<ApiRecord> result = new ArrayList<>();
         if (append && Files.exists(path) && Files.size(path) > 0) {
             result.addAll(load(path));
@@ -32,7 +32,7 @@ public class JsonStorage implements DataStorage {
     }
 
     @Override
-    public List<ApiRecord> load(Path path) throws IOException {
+    public synchronized List<ApiRecord> load(Path path) throws IOException {
         if (!Files.exists(path)) {
             throw new IOException("Файл не найден: " + path);
         }

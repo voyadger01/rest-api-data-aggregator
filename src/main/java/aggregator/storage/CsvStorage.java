@@ -30,7 +30,7 @@ public class CsvStorage implements DataStorage {
     }
 
     @Override
-    public void save(List<ApiRecord> records, Path path, boolean append) throws IOException {
+    public synchronized void save(List<ApiRecord> records, Path path, boolean append) throws IOException {
         List<ApiRecord> allRecords = new ArrayList<>();
         if (append && Files.exists(path) && Files.size(path) > 0) {
             allRecords.addAll(load(path));
@@ -70,7 +70,7 @@ public class CsvStorage implements DataStorage {
     }
 
     @Override
-    public List<ApiRecord> load(Path path) throws IOException {
+    public synchronized List<ApiRecord> load(Path path) throws IOException {
         if (!Files.exists(path)) {
             throw new IOException("Файл не найден: " + path);
         }
