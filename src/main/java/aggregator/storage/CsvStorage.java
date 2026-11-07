@@ -195,7 +195,7 @@ public class CsvStorage implements DataStorage {
             }
 
             if (current == '"') {
-                if (value.length() != 0 || wasQuoted) {
+                if (!value.isEmpty() || wasQuoted) {
                     throw new IOException("Некорректное экранирование CSV");
                 }
                 quoted = true;
@@ -207,9 +207,7 @@ public class CsvStorage implements DataStorage {
             } else if (current == '\n' || current == '\r') {
                 row.add(new CsvCell(value.toString(), wasQuoted));
                 value.setLength(0);
-                if (!row.isEmpty()) {
-                    rows.add(row);
-                }
+                rows.add(row);
                 row = new ArrayList<>();
                 wasQuoted = false;
                 if (current == '\r' && i + 1 < content.length() && content.charAt(i + 1) == '\n') {
@@ -223,7 +221,7 @@ public class CsvStorage implements DataStorage {
         if (quoted) {
             throw new IOException("Незакрытая кавычка в CSV");
         }
-        if (!row.isEmpty() || value.length() > 0 || wasQuoted) {
+        if (!row.isEmpty() || !value.isEmpty() || wasQuoted) {
             row.add(new CsvCell(value.toString(), wasQuoted));
             rows.add(row);
         }
@@ -235,14 +233,16 @@ public class CsvStorage implements DataStorage {
         if (cell.quoted()) {
             return TextNode.valueOf(value);
         }
-        if (value.equals("null")) {
-            return NullNode.instance;
-        }
-        if (value.equals("true")) {
-            return mapper.getNodeFactory().booleanNode(true);
-        }
-        if (value.equals("false")) {
-            return mapper.getNodeFactory().booleanNode(false);
+        switch (value) {
+            case "null" -> {
+                return NullNode.instance;
+            }
+            case "true" -> {
+                return mapper.getNodeFactory().booleanNode(true);
+            }
+            case "false" -> {
+                return mapper.getNodeFactory().booleanNode(false);
+            }
         }
         if (value.equals("{}") || value.equals("[]") || value.matches("-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?")) {
             return mapper.readTree(value);
