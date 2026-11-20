@@ -14,6 +14,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DataAggregator {
     private final Map<String, ApiSource> sources;
@@ -21,13 +24,18 @@ public class DataAggregator {
     private final ObjectMapper mapper;
 
     public DataAggregator(Map<String, ApiSource> sources, HttpClientService httpClient, ObjectMapper mapper) {
-        this.sources = Map.copyOf(sources);
-        this.httpClient = httpClient;
-        this.mapper = mapper;
+        this.sources = sources.values().stream()
+                .collect(Collectors.toUnmodifiableMap(
+                        source -> source.name().toLowerCase(Locale.ROOT),
+                        Function.identity()
+                ));
+        this.httpClient = Objects.requireNonNull(httpClient);
+        this.mapper = Objects.requireNonNull(mapper);
     }
 
     public List<ApiRecord> collect(List<String> sourceNames, Map<String, Map<String, String>> overrides)
             throws IOException, InterruptedException {
+        Objects.requireNonNull(sourceNames);
         List<ApiRecord> records = new ArrayList<>();
         for (String sourceName : sourceNames) {
             ApiSource source = sources.get(sourceName.toLowerCase(Locale.ROOT));
@@ -36,7 +44,14 @@ public class DataAggregator {
             }
 
             Map<String, String> parameters = new LinkedHashMap<>(source.defaultParameters());
-            parameters.putAll(overrides.getOrDefault(source.name(), Map.of()));
+            Map<String, String> sourceOverrides = overrides == null
+                    ? Map.of()
+                    : overrides.entrySet().stream()
+                            .filter(entry -> entry.getKey().equalsIgnoreCase(source.name()))
+                            .map(Map.Entry::getValue)
+                            .findFirst()
+                            .orElse(Map.of());
+            parameters.putAll(sourceOverrides);
             URI uri = URI.create(source.buildUrl(parameters));
             String responseBody = httpClient.get(uri);
             JsonNode response = mapper.readTree(responseBody);

@@ -91,4 +91,29 @@ class ApiSourceConfigurationTest {
         assertEquals(4, source.defaultParameters().get("current").split(",").length);
         assertFalse(source.defaultParameters().containsKey("hourly"));
     }
+
+    @Test
+    void encodesQueryParametersAndOmitsQuestionMarkForEmptyParameters() {
+        ApiSource source = new OpenMeteoSource();
+
+        assertEquals("https://api.open-meteo.com/v1/forecast", source.buildUrl(java.util.Map.of()));
+        java.util.Map<String, String> parameters = new java.util.LinkedHashMap<>();
+        parameters.put("city", "New York");
+        parameters.put("note", "a&b");
+
+        assertEquals(
+                "https://api.open-meteo.com/v1/forecast?city=New+York&note=a%26b",
+                source.buildUrl(parameters)
+        );
+    }
+
+    @Test
+    void sourceExtractorsReturnTheExpectedResponseNode() throws Exception {
+        JsonNode response = mapper.readTree("{\"data\":{\"value\":1}}");
+
+        assertEquals(response, new OpenMeteoSource().extractData(response));
+        assertEquals(response, new JsonPlaceholderUsersSource().extractData(response));
+        assertEquals(response, new DummyJsonCommentsSource().extractData(response));
+    }
+
 }

@@ -3,18 +3,19 @@ package aggregator.config;
 import aggregator.DataAggregator;
 import aggregator.http.HttpClientService;
 import aggregator.source.ApiSource;
-import aggregator.source.DummyJsonCommentsSource;
-import aggregator.source.JsonPlaceholderUsersSource;
-import aggregator.source.OpenMeteoSource;
 import aggregator.storage.CsvStorage;
 import aggregator.storage.DataStorage;
 import aggregator.storage.JsonStorage;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -26,20 +27,32 @@ public class AggregatorConfiguration {
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 
-    @Bean ApiSource weatherSource() { return new OpenMeteoSource(); }
-    @Bean ApiSource usersSource() { return new JsonPlaceholderUsersSource(); }
-    @Bean ApiSource commentsSource() { return new DummyJsonCommentsSource(); }
-
     @Bean
-    Map<String, ApiSource> apiSources(@org.springframework.beans.factory.annotation.Qualifier("weatherSource") ApiSource weatherSource, @org.springframework.beans.factory.annotation.Qualifier("usersSource") ApiSource usersSource, @org.springframework.beans.factory.annotation.Qualifier("commentsSource") ApiSource commentsSource) {
-        return Map.of("weather", weatherSource, "users", usersSource, "comments", commentsSource);
+    Map<String, ApiSource> apiSources(List<ApiSource> sources) {
+        Map<String, ApiSource> registry = new LinkedHashMap<>();
+        for (ApiSource source : sources) {
+            String name = source.name().toLowerCase(Locale.ROOT);
+            if (name.isBlank()) {
+                throw new IllegalStateException("Имя API не может быть пустым");
+            }
+            if (registry.putIfAbsent(name, source) != null) {
+                throw new IllegalStateException("Повторяющееся имя API: " + name);
+            }
+        }
+        return Map.copyOf(registry);
     }
 
     @Bean
-    HttpClientService httpClientService() { return new HttpClientService(); }
+    HttpClientService httpClientService() {
+        return new HttpClientService();
+    }
 
     @Bean
-    DataAggregator dataAggregator(@org.springframework.beans.factory.annotation.Qualifier("apiSources") Map<String, ApiSource> apiSources, HttpClientService client, ObjectMapper mapper) {
+    DataAggregator dataAggregator(
+            @Qualifier("apiSources") Map<String, ApiSource> apiSources,
+            HttpClientService client,
+            ObjectMapper mapper
+    ) {
         return new DataAggregator(apiSources, client, mapper);
     }
 

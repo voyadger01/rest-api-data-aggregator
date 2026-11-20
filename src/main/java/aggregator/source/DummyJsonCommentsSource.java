@@ -1,9 +1,11 @@
 package aggregator.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Component
 public class DummyJsonCommentsSource implements ApiSource {
     @Override
     public String name() {

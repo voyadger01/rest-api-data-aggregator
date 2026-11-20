@@ -1,10 +1,12 @@
 package aggregator.source;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Component
 public class OpenMeteoSource implements ApiSource {
     @Override
     public String name() {

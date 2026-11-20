@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -112,9 +113,15 @@ public class CsvStorage implements DataStorage {
                 }
             }
 
+            Instant fetchedAt;
+            try {
+                fetchedAt = Instant.parse(row.get(2).value());
+            } catch (DateTimeParseException exception) {
+                throw new IOException("Некорректная временная метка CSV в строке " + (rowIndex + 1), exception);
+            }
             records.add(new ApiRecord(
                     row.get(1).value(),
-                    Instant.parse(row.get(2).value()),
+                    fetchedAt,
                     Map.copyOf(parameters),
                     data
             ));
@@ -176,6 +183,7 @@ public class CsvStorage implements DataStorage {
         StringBuilder value = new StringBuilder();
         boolean quoted = false;
         boolean wasQuoted = false;
+        boolean closedQuote = false;
 
         for (int i = 0; i < content.length(); i++) {
             char current = content.charAt(i);
@@ -187,6 +195,7 @@ public class CsvStorage implements DataStorage {
                         i++;
                     } else {
                         quoted = false;
+                        closedQuote = true;
                     }
                 } else {
                     value.append(current);
@@ -194,6 +203,9 @@ public class CsvStorage implements DataStorage {
                 continue;
             }
 
+            if (closedQuote && current != ',' && current != '\n' && current != '\r') {
+                throw new IOException("Некорректное экранирование CSV");
+            }
             if (current == '"') {
                 if (!value.isEmpty() || wasQuoted) {
                     throw new IOException("Некорректное экранирование CSV");
@@ -204,12 +216,14 @@ public class CsvStorage implements DataStorage {
                 row.add(new CsvCell(value.toString(), wasQuoted));
                 value.setLength(0);
                 wasQuoted = false;
+                closedQuote = false;
             } else if (current == '\n' || current == '\r') {
                 row.add(new CsvCell(value.toString(), wasQuoted));
                 value.setLength(0);
                 rows.add(row);
                 row = new ArrayList<>();
                 wasQuoted = false;
+                closedQuote = false;
                 if (current == '\r' && i + 1 < content.length() && content.charAt(i + 1) == '\n') {
                     i++;
                 }
@@ -317,7 +331,15 @@ public class CsvStorage implements DataStorage {
     }
 
     private boolean isIndex(String value) {
-        return value.matches("[0-9]+");
+        if (!value.matches("[0-9]+")) {
+            return false;
+        }
+        try {
+            Integer.parseInt(value);
+            return true;
+        } catch (NumberFormatException exception) {
+            return false;
+        }
     }
 
     private record CsvValue(String value, boolean text) {
